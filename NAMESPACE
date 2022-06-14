@@ -2,6 +2,7 @@
 
 export(bbmix_lkl_agq_fixvar)
 export(bbmix_vem)
+export(bbmix_vem_fixs2)
 export(bbmixture_lkl_agq)
 export(bbmixture_vem)
 import(data.table)

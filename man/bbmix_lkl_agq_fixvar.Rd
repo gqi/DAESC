@@ -11,7 +11,7 @@ bbmix_lkl_agq_fixvar(
   y,
   n,
   X,
-  subj,
+  subjfac,
   niter_laplace,
   num.nodes,
   sumlkl = TRUE
