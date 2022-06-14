@@ -1,6 +1,6 @@
 #' Beta-binomial model VEM M-step
 #' @param param: b and phi
-bbmix_vem_mstep_fixs2 <- function(param, y, n, X, subjfac,
+bbmix_vem_mstep_fixs2 <- function(param, sigma2, y, n, X, subjfac,
                             randint, randint.prec, ghq, optim.method){
     # Update beta and phi. par=c(b,phi)
     bphi <- optim(par=param, fn=bbmix_vem_qfunc, control = list(fnscale=-1),
@@ -44,7 +44,7 @@ bbmix_vem_fixs2 <- function(param, y, n, X, subj, niter, niter_laplace, num.node
                                      randint.prec=estep.out$randint.prec,
                                      ghq=ghq, niter_laplace=niter_laplace)
         # M-step
-        mstep.out.new <- bbmix_vem_mstep_fixs2(param=c(mstep.out$b,mstep.out$phi), y=y, n=n, X=X, subjfac=subjfac,
+        mstep.out.new <- bbmix_vem_mstep_fixs2(param=c(mstep.out$b,mstep.out$phi), sigma2=mstep.out$sigma2, y=y, n=n, X=X, subjfac=subjfac,
                                          randint=estep.out$randint, randint.prec=estep.out$randint.prec,
                                          ghq=ghq, optim.method=optim.method)
         # Convergence check

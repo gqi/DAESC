@@ -6,6 +6,7 @@
 \usage{
 bbmix_vem_mstep_fixs2(
   param,
+  sigma2,
   y,
   n,
   X,
