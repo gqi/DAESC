@@ -66,3 +66,15 @@ bbmix_lkl_agq_fixvar <- function(b, sigma2, phi, y, n, X, subjfac, niter_laplace
     return(llkl)
 }
 
+#' Likelihood function of mixture model
+#' @export
+bbmixture_lkl_agq <- function(b, sigma2, phi, p, y, n, X, subjfac, niter_laplace,
+                              num.nodes){
+    llkl1 <- bbmix_lkl_agq_fixvar(b=b, sigma2=sigma2, phi=phi, y=y, n=n, X=X,
+                                  subjfac=subjfac, niter_laplace,num.nodes, sumlkl=FALSE)
+    llkl2 <- bbmix_lkl_agq_fixvar(b=-b, sigma2=sigma2, phi=phi, y=y, n=n, X=X,
+                                  subjfac=subjfac, niter_laplace, num.nodes, sumlkl=FALSE)
+    llkl.max <- pmax(llkl1,llkl2)
+
+    return(sum(log(p[1]*exp(llkl1-llkl.max)+p[2]*exp(llkl2-llkl.max))+llkl.max))
+}
