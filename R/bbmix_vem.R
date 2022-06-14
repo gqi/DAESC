@@ -54,8 +54,8 @@ bbmix_vem_mstep <- function(param, y, n, X, subjfac,
     phi <- bphi[length(bphi)]
 
     llkl <- bbmix_lkl_agq_fixvar(b=b, sigma2=sigma2, phi=phi,
-                                     y=y, n=n, X=X, subjfac=subjfac,
-                                     niter_laplace=3, num.nodes=1, sumlkl=TRUE)
+                                 y=y, n=n, X=X, subjfac=subjfac,
+                                 niter_laplace=3, num.nodes=1, sumlkl=TRUE)
     return(list(b=b, sigma2=sigma2, phi=phi, llkl=llkl))
 }
 
@@ -74,11 +74,10 @@ bbmix_vem <- function(param, y, n, X, subj, niter, niter_laplace, num.nodes,
     ghq$weights <- ghq$weights/sqrt(pi)
 
     # VEM iterations
-    llkl <- -1e300
     randint <- rep(0,nsubj)
     note <- "Did not converge"
     mstep.out <- list(b=param[1:(length(param)-2)], sigma2=param[length(param)-1],
-                      phi=param[length(param)])
+                      phi=param[length(param)], llkl=-1e300)
     estep.out <- list(randint=rep(0,nsubj), randint.prec=rep(1/mstep.out$sigma2,nsubj))
 
     for (iter in 1:niter){
@@ -93,12 +92,11 @@ bbmix_vem <- function(param, y, n, X, subj, niter, niter_laplace, num.nodes,
                                          randint=estep.out$randint, randint.prec=estep.out$randint.prec,
                                          ghq=ghq, optim.method=optim.method)
         # Convergence check
-        llkl_reldiff <- (mstep.out.new$llkl-mstep.out.new$llkl)/abs(mstep.out$llkl)
-        # <converge_tol
-        if (llkl_reldiff> -1e-5 & llkl_reldiff<converge_tol){
+        llkl_reldiff <- (mstep.out.new$llkl-mstep.out$llkl)/abs(mstep.out$llkl)
+        if (llkl_reldiff> -1e-7){
             # If the update improves the likelihood, accept. Otherwise reject and exit
             mstep.out <- mstep.out.new
-            if (converge){
+            if (llkl_reldiff<converge_tol){
                 note <- "Converged"
                 break
             }
@@ -108,13 +106,13 @@ bbmix_vem <- function(param, y, n, X, subj, niter, niter_laplace, num.nodes,
         }
 
         if (iter%%10==0){
-            print.out <- round(c(iter,mstep.out$b,mstep.out$sigma2,mstep.out$phi,llkl.new),3)
-            names(print.out) <- c("iter",paste0("b",1:length(b)),"sigma2","phi","llkl")
+            print.out <- round(c(iter,mstep.out$b,mstep.out$sigma2,mstep.out$phi,mstep.out$llkl),3)
+            names(print.out) <- c("iter",paste0("b",1:length(mstep.out$b)),"sigma2","phi","llkl")
             print(print.out)
         }
     }
 
-    return(list(b=b,sigma2=sigma2,phi=phi,llkl=llkl, nobs=length(y), nsubj=nsubj, note=note))
+    return(c(mstep.out, list(nobs=length(y), nsubj=nsubj, note=note, iter=iter)))
 }
 
 #' Mixture model VEM mixture weights
@@ -211,17 +209,20 @@ bbmixture_vem_mstep <- function(param, wt, y, n, X, subjfac,
     b <- bphi[1:(length(bphi)-1)]
     phi <- bphi[length(bphi)]
 
+    llkl <- bbmixture_lkl_agq(b=b, sigma2=sigma2, phi=phi, p=p,
+                              y=y, n=n, X=X, subjfac=subjfac, niter_laplace=3, num.nodes=1)
+
     return(list(b=b, sigma2=sigma2, phi=phi, p=p))
 }
 
 #' Likelihood function of mixture model
 #' @export
-bbmixture_lkl_agq <- function(b, sigma2, phi, p, y, n, X, subj, niter_laplace,
+bbmixture_lkl_agq <- function(b, sigma2, phi, p, y, n, X, subjfac, niter_laplace,
                               num.nodes){
-    llkl1 <- bbmix_lkl_agq_fixvar(b, sigma2, phi, y, n, X, subj, niter_laplace,
-                                  num.nodes, sumlkl=FALSE)
-    llkl2 <- bbmix_lkl_agq_fixvar(-b, sigma2, phi, y, n, X, subj, niter_laplace,
-                                  num.nodes, sumlkl=FALSE)
+    llkl1 <- bbmix_lkl_agq_fixvar(b=b, sigma2=sigma2, phi=phi, y=y, n=n, X=X,
+                                  subjfac=subjfac, niter_laplace,num.nodes, sumlkl=FALSE)
+    llkl2 <- bbmix_lkl_agq_fixvar(b=-b, sigma2=sigma2, phi=phi, y=y, n=n, X=X,
+                                  subjfac=subjfac, niter_laplace, num.nodes, sumlkl=FALSE)
     llkl.max <- pmax(llkl1,llkl2)
 
     return(sum(log(p[1]*exp(llkl1-llkl.max)+p[2]*exp(llkl2-llkl.max))+llkl.max))
@@ -242,10 +243,9 @@ bbmixture_vem <- function(param, y, n, X, subj, niter, niter_laplace, num.nodes,
     ghq$weights <- ghq$weights/sqrt(pi)
 
     # VEM iterations
-    llkl <- -1e300
     note <- "Did not converge"
     mstep.out <- list(b=param[1:(length(param)-2)], sigma2=param[length(param)-1],
-                      phi=param[length(param)], p=c(0.9,0.1))
+                      phi=param[length(param)], p=c(0.9,0.1), llkl=-1e300)
     estep.out <- list(randint=rep(0,nsubj), randint.prec=rep(1/mstep.out$sigma2,nsubj))
     for (iter in 1:niter){
         # E-step: use normal distribution to approximate the posterior of randint
@@ -258,14 +258,13 @@ bbmixture_vem <- function(param, y, n, X, subj, niter, niter_laplace, num.nodes,
         mstep.out.new <- bbmixture_vem_mstep(param=c(mstep.out$b,mstep.out$phi), wt=estep.out$wt, y, n, X, subjfac,
                                         randint=estep.out$randint, randint.prec=estep.out$randint.prec,
                                         ghq, optim.method=optim.method)
-        llkl.new <- bbmixture_lkl_agq(b=mstep.out$b, sigma2=mstep.out$sigma2,
-                                      phi=mstep.out$phi, p=mstep.out$p, y, n, X, subj, niter_laplace=3, num.nodes=1)
-        converge <- abs(llkl.new-llkl)/abs(llkl)<converge_tol
-        if (llkl.new-llkl>-0.00001*abs(llkl)){
+
+        # Convergence check
+        llkl_reldiff <- (mstep.out.new$llkl-mstep.out$llkl)/abs(mstep.out$llkl)
+        if (llkl_reldiff> -1e-7){
             # If the update improves the likelihood, accept. Otherwise reject and exit
             mstep.out <- mstep.out.new
-            llkl <- llkl.new
-            if (converge){
+            if (llkl_reldiff<converge_tol){
                 note <- "Converged"
                 break
             }
@@ -275,7 +274,7 @@ bbmixture_vem <- function(param, y, n, X, subj, niter, niter_laplace, num.nodes,
         }
 
         if (iter%%10==0){
-            print.out <- round(c(iter,mstep.out$p[1],mstep.out$b,mstep.out$sigma2,mstep.out$phi,llkl.new),3)
+            print.out <- round(c(iter,mstep.out$p[1],mstep.out$b,mstep.out$sigma2,mstep.out$phi,mstep.out$llkl),3)
             names(print.out) <- c("iter","p",paste0("b",1:length(mstep.out$b)),"sigma2","phi","llkl")
             print(print.out)
         }
