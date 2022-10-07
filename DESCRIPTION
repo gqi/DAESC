@@ -4,7 +4,7 @@ Title: Differential Allelic Expression using Single-Cell data
 Version: 0.1.0
 Author: Guanghao Qi
 Maintainer: Guanghao Qi <gqi1@jhu.edu>
-Description: DAESC is a software for differential allele-specific expression (ASE) analysis using single-cell RNA-seq data of multiple individuals. It can be applied to any comparison of interested that can be represented by a design matrix, including but not limited to: 1) discrete cell types 2) continuous cell states (e.g. pseudotime) 3) case-control disease status 4) continuous phenotype of the donors (e.g. BMI, blood pressure). DAESC includes two components: DAESC-BB and DAESC-Mix.
+Description: DAESC is a software for differential allele-specific expression (ASE) analysis using single-cell RNA-seq data of multiple individuals. It can be applied to any comparison represented by a design matrix, including but not limited to: 1) discrete cell types 2) continuous cell states (e.g. pseudotime) 3) case-control disease status 4) continuous phenotype of the donors (e.g. BMI, blood pressure). DAESC includes two components: DAESC-BB and DAESC-Mix.
 License: GPL-2
 Encoding: UTF-8
 LazyData: true
@@ -12,7 +12,7 @@ RoxygenNote: 7.1.2
 Depends: 
     R (>= 4.1),
     data.table,
-    dplyr,
+    dplyr
 Imports:
     lme4,
     aod,

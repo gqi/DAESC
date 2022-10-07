@@ -1,3 +1,4 @@
+#' Obtain initial values for DAESC
 daesc_init <- function(y, n, subj, x){
     init.glmm <- glmer(cbind(y,n-y)~x+(1|subj), family="binomial")
     sigma2 <- VarCorr(init.glmm)$subj[1]
