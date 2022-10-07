@@ -32,7 +32,6 @@ compute_randint_deriv <- function(linpred, randint, subjfac, y, n, phi, include_
 #' @import lme4
 #' @import numDeriv
 #' @import data.table
-#' @export
 bbmix_lkl_agq_fixvar <- function(b, sigma2, phi, y, n, X, subjfac, niter_laplace,
                                  num.nodes, sumlkl=TRUE){
     linpred <- as.vector(X%*%b)
@@ -67,7 +66,6 @@ bbmix_lkl_agq_fixvar <- function(b, sigma2, phi, y, n, X, subjfac, niter_laplace
 }
 
 #' Likelihood function of mixture model
-#' @export
 bbmixture_lkl_agq <- function(b, sigma2, phi, p, y, n, X, subjfac, niter_laplace,
                               num.nodes){
     llkl1 <- bbmix_lkl_agq_fixvar(b=b, sigma2=sigma2, phi=phi, y=y, n=n, X=X,
