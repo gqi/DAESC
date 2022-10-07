@@ -17,6 +17,7 @@ devtools::install_github("gqi/DAESC")
 ### Example
 
 ```
+library(DAESC)
 data("example", package="DAESC")
 # DAESC-BB analysis
 res.bb <- daesc_bb(y=df$y, n=df$n, subj=df$subj, x=df$x, niter=200, niter_laplace=2, num.nodes=3,
@@ -32,3 +33,6 @@ If you use this package, please cite
 
 Qi G, Strober BJ, Popp JM, Ji H,  Battle A. Single-cell allele-specific expression analysis reveals dynamic and cell-type-specific regulatory effects. bioRxiv 2022.10.06.511215 (2022) doi:10.1101/2022.10.06.511215.
 
+### Maintainer
+
+Guanghao Qi (gqi1@jhu.edu)

@@ -3,7 +3,7 @@ daesc_init <- function(y, n, subj, x){
     sigma2 <- VarCorr(init.glmm)$subj[1]
     sigma2 <- ifelse(sigma2<0.001,0.05,sigma2)
 
-    init.bb <- betabin(cbind(y,n-y)~., random=~1, data=data.frame(y,n,x))
+    init.bb <- aod::betabin(cbind(y,n-y)~., random=~1, data=data.frame(y,n,x))
     phi <- 1/(1/init.bb@param[3]-1)
     phi <- ifelse(phi<0.001,0.05,phi)
     param.init <- c(summary(init.glmm)$coefficients[,1], sigma2, phi)
