@@ -32,6 +32,7 @@ compute_randint_deriv <- function(linpred, randint, subjfac, y, n, phi, include_
 #' @import lme4
 #' @import numDeriv
 #' @import data.table
+#' @import dplyr
 bbmix_lkl_agq_fixvar <- function(b, sigma2, phi, y, n, X, subjfac, niter_laplace,
                                  num.nodes, sumlkl=TRUE){
     linpred <- as.vector(X%*%b)
