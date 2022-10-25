@@ -28,14 +28,14 @@ daesc_init <- function(y, n, subj, x){
 #' \item{b}{Estimate of coefficients representing ASE and differential ASE effects. The first element is the intercept. The following elements are log odds ratios of allelic fraction per unit increase in the variable(s) in \code{x}.}
 #' \item{sigma2}{Estimated variance of individual-specific random effects.}
 #' \item{phi}{Estimated over-dispersion parameter in the beta-binomail distribution.}
+#' \item{p.value}{P-value for differential ASE.}
 #' \item{llkl}{Log-likelihood.}
+#' \item{llkl.null}{Log-likelihood of the null model.}
+#' \item{note}{Note on convergence status.}
+#' \item{note.null}{Note on convergence status of null model.}
 #' \item{nobs}{Number of cells.}
 #' \item{nsubj}{Number of individuals.}
-#' \item{note}{Note on convergence status.}
 #' \item{iter}{Total number of VEM iterations.}
-#' \item{llkl.null}{Log-likelihood of the null model.}
-#' \item{note.null}{Note on convergence status of null model.}
-#' \item{p.value}{P-value for differential ASE.}
 #'
 #' @export
 daesc_bb <- function(y, n, subj, x, niter=200, niter_laplace=2, num.nodes=3,
@@ -55,6 +55,11 @@ daesc_bb <- function(y, n, subj, x, niter=200, niter_laplace=2, num.nodes=3,
     res$note.null <- res.null$note
     res$p.value <- pchisq(2*(res$llkl-res$llkl.null),df=1,lower.tail=F)
 
+    # Clean up results presentation
+    names(res$b) <- c("Intercept",paste0("x",1:(length(res$b)-1)))
+    res$phi <- as.numeric(res$phi)
+
+    res <- res[c("b","sigma2","phi","p.value","llkl","llkl.null","note","note.null","nobs","nsubj","iter")]
     return(res)
 }
 
@@ -75,15 +80,15 @@ daesc_bb <- function(y, n, subj, x, niter=200, niter_laplace=2, num.nodes=3,
 #' \item{sigma2}{Estimated variance of individual-specific random effects.}
 #' \item{phi}{Estimated over-dispersion parameter in the beta-binomail distribution.}
 #' \item{p}{Mixture probabilities pi0 and 1-pi0}
+#' \item{p.value}{P-value for differential ASE.}
+#' \item{wt}{Posterior probabilities for each individual to be classified into cluster 1 (first column) or cluster 2 (second column).}
 #' \item{llkl}{Log-likelihood.}
+#' \item{llkl.null}{Log-likelihood of the null model.}
+#' \item{note}{Note on convergence status.}
+#' \item{note.null}{Note on convergence status of null model.}
 #' \item{nobs}{Number of cells.}
 #' \item{nsubj}{Number of individuals.}
-#' \item{wt}{Posterior probabilities for each individual to be classified into cluster 1 (first column) or cluster 2 (second column).}
-#' \item{note}{Note on convergence status.}
 #' \item{iter}{Total number of VEM iterations.}
-#' \item{llkl.null}{Log-likelihood of the null model.}
-#' \item{note.null}{Note on convergence status of null model.}
-#' \item{p.value}{P-value for differential ASE.}
 #' @export
 daesc_mix <- function(y, n, subj, x, niter=200, niter_laplace=2, num.nodes=3,
                      optim.method="BFGS", converge_tol=1e-7){
@@ -101,6 +106,14 @@ daesc_mix <- function(y, n, subj, x, niter=200, niter_laplace=2, num.nodes=3,
     res$llkl.null <- res.null$llkl
     res$note.null <- res.null$note
     res$p.value <- pchisq(2*(res$llkl-res$llkl.null),df=1,lower.tail=F)
+
+    # Clean up results presentation
+    names(res$b) <- c("Intercept",paste0("x",1:(length(res$b)-1)))
+    res$phi <- as.numeric(res$phi)
+    names(res$p) <- c("z=1","z=-1")
+    colnames(res$wt) <- c("z=1","z=-1")
+
+    res <- res[c("b","sigma2","phi","p","p.value","wt","llkl","llkl.null","note","note.null","nobs","nsubj","iter")]
 
     return(res)
 }

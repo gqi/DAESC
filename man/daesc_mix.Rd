@@ -41,15 +41,15 @@ A list including
 \item{sigma2}{Estimated variance of individual-specific random effects.}
 \item{phi}{Estimated over-dispersion parameter in the beta-binomail distribution.}
 \item{p}{Mixture probabilities pi0 and 1-pi0}
+\item{p.value}{P-value for differential ASE.}
+\item{wt}{Posterior probabilities for each individual to be classified into cluster 1 (first column) or cluster 2 (second column).}
 \item{llkl}{Log-likelihood.}
+\item{llkl.null}{Log-likelihood of the null model.}
+\item{note}{Note on convergence status.}
+\item{note.null}{Note on convergence status of null model.}
 \item{nobs}{Number of cells.}
 \item{nsubj}{Number of individuals.}
-\item{wt}{Posterior probabilities for each individual to be classified into cluster 1 (first column) or cluster 2 (second column).}
-\item{note}{Note on convergence status.}
 \item{iter}{Total number of VEM iterations.}
-\item{llkl.null}{Log-likelihood of the null model.}
-\item{note.null}{Note on convergence status of null model.}
-\item{p.value}{P-value for differential ASE.}
 }
 \description{
 DAESC-Mix is a beta-binomial mixture model for differential allele-specific expression (ASE) analysis using multiple single-cell RNA-seq samples. It can perform differential ASE analysis with respect to any conditions represented by the design matrix, regardless of whether the comparison is between cell-types within an individual or across individuals, and regardless of whether the condition of interest is continuous or discrete. DAESC-Mix is an extension of DAESC-BB incorporating implicit haplotype phasing.

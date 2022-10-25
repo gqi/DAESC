@@ -40,14 +40,14 @@ A list including
 \item{b}{Estimate of coefficients representing ASE and differential ASE effects. The first element is the intercept. The following elements are log odds ratios of allelic fraction per unit increase in the variable(s) in \code{x}.}
 \item{sigma2}{Estimated variance of individual-specific random effects.}
 \item{phi}{Estimated over-dispersion parameter in the beta-binomail distribution.}
+\item{p.value}{P-value for differential ASE.}
 \item{llkl}{Log-likelihood.}
+\item{llkl.null}{Log-likelihood of the null model.}
+\item{note}{Note on convergence status.}
+\item{note.null}{Note on convergence status of null model.}
 \item{nobs}{Number of cells.}
 \item{nsubj}{Number of individuals.}
-\item{note}{Note on convergence status.}
 \item{iter}{Total number of VEM iterations.}
-\item{llkl.null}{Log-likelihood of the null model.}
-\item{note.null}{Note on convergence status of null model.}
-\item{p.value}{P-value for differential ASE.}
 }
 \description{
 DAESC-BB is a beta-binomial random-effects model for differential allele-specific expression (ASE) analysis using multiple single-cell RNA-seq samples. It can perform differential ASE analysis with respect to any conditions represented by the design matrix, regardless of whether the comparison is between cell-types within an individual or across individuals, and regardless of whether the condition of interest is continuous or discrete.
