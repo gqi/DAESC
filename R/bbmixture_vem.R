@@ -1,4 +1,6 @@
 #' Mixture model VEM mixture weights
+#' 
+#' Complete log-likelihood for each subject, marginalized over a
 logBB_bysubj <- function(linpred, sigma2, phi, y, n, subjfac,
                          randint, randint.prec, ghq){
 

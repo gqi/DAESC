@@ -14,17 +14,44 @@ if (!require("devtools", quietly = TRUE))
 devtools::install_github("gqi/DAESC")
 ``` 
 
+Installation typically takes <30s.
+
 ### Example
 
 ```
 library(DAESC)
 data("example", package="DAESC")
-# DAESC-BB analysis
+# DAESC-BB analysis (run time: ~17s)
 res.bb <- daesc_bb(y=df$y, n=df$n, subj=df$subj, x=df$x, niter=200, niter_laplace=2, num.nodes=3,
                 optim.method="BFGS", converge_tol=1e-8)
-# DAESC-Mix analysis
+# DAESC-Mix analysis (run time: ~46s)
 res.mix <- daesc_mix(y=df$y, n=df$n, subj=df$subj, x=df$x, niter=200, niter_laplace=2, num.nodes=3,
                 optim.method="BFGS", converge_tol=1e-8)
+```
+
+View results
+
+```
+str(res.mix)
+#List of 13
+# $ b        : Named num [1:2] -0.17 0.979
+#  ..- attr(*, "names")= chr [1:2] "Intercept" "x1"
+# $ sigma2   : num 0.0564
+# $ phi      : num 0.672
+# $ p        : Named num [1:2] 0.765 0.235
+#  ..- attr(*, "names")= chr [1:2] "z=1" "z=-1"
+# $ p.value  : num 2.92e-15
+# $ wt       : num [1:53, 1:2] 1.00 4.98e-01 1.03e-01 1.75e-06 9.99e-01 ...
+#  ..- attr(*, "dimnames")=List of 2
+#  .. ..$ : chr [1:53] "HPSI0114i-eipl_1" "HPSI0114i-iisa_1" "HPSI0114i-iisa_3" "HPSI0114i-joxm_1" ...
+#  .. ..$ : chr [1:2] "z=1" "z=-1"
+# $ llkl     : num -27090
+# $ llkl.null: num -27122
+# $ note     : chr "Converged"
+# $ note.null: chr "Converged"
+# $ nobs     : int 3792
+# $ nsubj    : int 53
+# $ iter     : int 27
 ```
 
 Type `?daesc_bb` or `?daesc_mix` in R for detailed documentation.
@@ -38,3 +65,17 @@ Qi G, Strober BJ, Popp JM, Ji H,  Battle A. Single-cell allele-specific expressi
 ### Maintainer
 
 Guanghao Qi (gqi1@jhu.edu)
+
+### Dependencies
+
+The software can be run on any operating system as long as R (>= 4.1) is installed. Below is a list of required packages. 
+```
+data.table,
+dplyr,
+lme4,
+aod,
+statmod,
+numDeriv
+```
+
+DAESC has been tested successfully on R/4.1 and R/4.0.
