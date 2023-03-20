@@ -1,13 +1,14 @@
 #' Obtain initial values for DAESC
 daesc_init <- function(y, n, subj, x){
-    init.glmm <- glmer(cbind(y,n-y)~x+(1|subj), family="binomial")
+    init.glmm <- glmer(cbind(y,n-y)~x-1+(1|subj), family="binomial")
     sigma2 <- VarCorr(init.glmm)$subj[1]
     sigma2 <- ifelse(sigma2<0.001,0.05,sigma2)
 
-    init.bb <- aod::betabin(cbind(y,n-y)~., random=~1, data=data.frame(y,n,x))
-    phi <- 1/(1/init.bb@param[3]-1)
+    init.bb <- aod::betabin(cbind(y,n-y)~. -1, random=~1, data=data.frame(y,n,x))
+    phi <- 1/(1/init.bb@param[length(init.bb@param)]-1)
     phi <- ifelse(phi<0.001,0.05,phi)
     param.init <- c(summary(init.glmm)$coefficients[,1], sigma2, phi)
+    names(param.init)[c(length(param.init)-1,length(param.init))] <- c("sigma2","phi")
 
     return(param.init)
 }
@@ -18,6 +19,7 @@ daesc_init <- function(y, n, subj, x){
 #' @param n Total allele-specific read counts. A vector of same length as \code{y}.
 #' @param subj Donor ID. A vector of same length as \code{y}.
 #' @param x Design matrix for differential ASE. The number of rows should be equal to \code{length(y)}.
+#' @param xnull Design matrix under the null hypothesis. Hypothesis testing is based on likelihood ratio test comparing the full model based on \code{x} and null model based on \code{xnull}. The number of rows should be equal to \code{length(y)}.
 #' @param niter Maximum number of iterations of the variational EM (VEM) algorithm. Default to 200.
 #' @param niter_laplace Number of Newton-Raphson iterations for estimating the individual-specific random effects at each VEM iteration. This is part of the algorithm for numerical integration. Default to 2. Increasing \code{niter_laplace} leads to more accurate results but slower algorithm.
 #' @param num.nodes Number of nodes in Gaussian-Hermite quadrature for numeric integration. Default to 3.
@@ -38,17 +40,36 @@ daesc_init <- function(y, n, subj, x){
 #' \item{iter}{Total number of VEM iterations.}
 #'
 #' @export
-daesc_bb <- function(y, n, subj, x, niter=200, niter_laplace=2, num.nodes=3,
+daesc_bb <- function(y, n, subj, x, xnull=NULL, niter=200, niter_laplace=2, num.nodes=3,
                      optim.method="BFGS", converge_tol=1e-7){
+
+    # Convert design matrix to matrix if input is a vector
+    if (class(x)[1]!="matrix"){
+        X <- matrix(x, ncol=1)
+    } else{
+        X <- x
+    }
+    # Initializing
     param.init <- daesc_init(y=y, n=n, subj=subj, x=x)
 
     print("Fitting DAESC-BB")
-    res <- bbmix_vem(param=param.init, y=y, n=n, X=cbind(1,x),
+    res <- bbmix_vem(param=param.init, y=y, n=n, X=X,
                      subj=subj, niter=niter, niter_laplace=niter_laplace,
                      num.nodes=num.nodes, converge_tol=converge_tol)
 
+    # Convert null design matrix to matrix if input is NULL or a vector
+    if (is.null(xnull)){
+        XNull <- matrix(1,nrow=length(y),ncol=1)
+    } else if (class(x)[1]!="matrix"){
+        XNull <- matrix(xnull, ncol=1)
+    } else{
+        XNull <- xnull
+    }
+    # Initialize null model
+    param.init.null <- daesc_init(y=y, n=n, subj=subj, x=XNull)
+
     print("Fitting null model")
-    res.null <- bbmix_vem(param=param.init[-2], y=y, n=n, X=matrix(1,nrow=length(y),ncol=1),
+    res.null <- bbmix_vem(param=param.init.null, y=y, n=n, X=XNull,
                           subj=subj, niter=niter, niter_laplace=niter_laplace,
                           num.nodes=num.nodes, converge_tol=converge_tol)
     res$llkl.null <- res.null$llkl
@@ -69,6 +90,7 @@ daesc_bb <- function(y, n, subj, x, niter=200, niter_laplace=2, num.nodes=3,
 #' @param n Total allele-specific read counts. A vector of same length as \code{y}.
 #' @param subj Donor ID. A vector of same length as \code{y}.
 #' @param x Design matrix for differential ASE. The number of rows should be equal to \code{length(y)}.
+#' @param xnull Design matrix under the null hypothesis. Hypothesis testing is based on likelihood ratio test comparing the full model based on \code{x} and null model based on \code{xnull}. The number of rows should be equal to \code{length(y)}.
 #' @param niter Maximum number of iterations of the variational EM (VEM) algorithm. Default to 200.
 #' @param niter_laplace Number of Newton-Raphson iterations for estimating the individual-specific random effects at each VEM iteration. This is part of the algorithm for numerical integration. Default to 2. Increasing \code{niter_laplace} leads to more accurate results but slower algorithm.
 #' @param num.nodes Number of nodes in Gaussian-Hermite quadrature for numeric integration. Default to 3.
@@ -90,17 +112,37 @@ daesc_bb <- function(y, n, subj, x, niter=200, niter_laplace=2, num.nodes=3,
 #' \item{nsubj}{Number of individuals.}
 #' \item{iter}{Total number of VEM iterations.}
 #' @export
-daesc_mix <- function(y, n, subj, x, niter=200, niter_laplace=2, num.nodes=3,
+daesc_mix <- function(y, n, subj, x, xnull, niter=200, niter_laplace=2, num.nodes=3,
                      optim.method="BFGS", converge_tol=1e-7){
+    # param.init <- daesc_init(y=y, n=n, subj=subj, x=x)
+
+    # Convert design matrix to matrix if input is a vector
+    if (class(x)[1]!="matrix"){
+        X <- matrix(x, ncol=1)
+    } else{
+        X <- x
+    }
+    # Initializing
     param.init <- daesc_init(y=y, n=n, subj=subj, x=x)
 
     print("Fitting DAESC-Mix")
-    res <- bbmixture_vem(param=param.init, y=y, n=n, X=cbind(1,x),
+    res <- bbmixture_vem(param=param.init, y=y, n=n, X=X,
                      subj=subj, niter=niter, niter_laplace=niter_laplace,
                      num.nodes=num.nodes, converge_tol=converge_tol)
 
+    # Convert null design matrix to matrix if input is NULL or a vector
+    if (is.null(xnull)){
+        XNull <- matrix(1,nrow=length(y),ncol=1)
+    } else if (class(x)[1]!="matrix"){
+        XNull <- matrix(xnull, ncol=1)
+    } else{
+        XNull <- xnull
+    }
+    # Initialize null model
+    param.init.null <- daesc_init(y=y, n=n, subj=subj, x=XNull)
+
     print("Fitting null model")
-    res.null <- bbmixture_vem(param=param.init[-2], y=y, n=n, X=matrix(1,nrow=length(y),ncol=1),
+    res.null <- bbmixture_vem(param=param.init.null, y=y, n=n, X=XNull,
                           subj=subj, niter=niter, niter_laplace=niter_laplace,
                           num.nodes=num.nodes, converge_tol=converge_tol)
     res$llkl.null <- res.null$llkl

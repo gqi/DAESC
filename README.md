@@ -22,10 +22,10 @@ Installation typically takes <30s.
 library(DAESC)
 data("example", package="DAESC")
 # DAESC-BB analysis (run time: ~17s)
-res.bb <- daesc_bb(y=df$y, n=df$n, subj=df$subj, x=df$x, niter=200, niter_laplace=2, num.nodes=3,
+res.bb <- daesc_bb(y=df$y, n=df$n, subj=df$subj, x=cbind(1,df$x), xnull=matrix(1,nrow=nrow(df),ncol=1), niter=200, niter_laplace=2, num.nodes=3,
                 optim.method="BFGS", converge_tol=1e-8)
 # DAESC-Mix analysis (run time: ~46s)
-res.mix <- daesc_mix(y=df$y, n=df$n, subj=df$subj, x=df$x, niter=200, niter_laplace=2, num.nodes=3,
+res.mix <- daesc_mix(y=df$y, n=df$n, subj=df$subj, x=cbind(1,df$x), xnull=matrix(1,nrow=nrow(df),ncol=1), niter=200, niter_laplace=2, num.nodes=3,
                 optim.method="BFGS", converge_tol=1e-8)
 ```
 
