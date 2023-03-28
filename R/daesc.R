@@ -74,7 +74,7 @@ daesc_bb <- function(y, n, subj, x, xnull=NULL, niter=200, niter_laplace=2, num.
                           num.nodes=num.nodes, converge_tol=converge_tol)
     res$llkl.null <- res.null$llkl
     res$note.null <- res.null$note
-    res$p.value <- pchisq(2*(res$llkl-res$llkl.null),df=1,lower.tail=F)
+    res$p.value <- pchisq(2*(res$llkl-res$llkl.null),df=ncol(X)-ncol(XNull),lower.tail=F)
 
     # Clean up results presentation
     names(res$b) <- c("Intercept",paste0("x",1:(length(res$b)-1)))
@@ -147,7 +147,7 @@ daesc_mix <- function(y, n, subj, x, xnull, niter=200, niter_laplace=2, num.node
                           num.nodes=num.nodes, converge_tol=converge_tol)
     res$llkl.null <- res.null$llkl
     res$note.null <- res.null$note
-    res$p.value <- pchisq(2*(res$llkl-res$llkl.null),df=1,lower.tail=F)
+    res$p.value <- pchisq(2*(res$llkl-res$llkl.null),df=ncol(X)-ncol(XNull),lower.tail=F)
 
     # Clean up results presentation
     names(res$b) <- c("Intercept",paste0("x",1:(length(res$b)-1)))
