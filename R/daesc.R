@@ -39,6 +39,13 @@ daesc_init <- function(y, n, subj, x){
 #' \item{nsubj}{Number of individuals.}
 #' \item{iter}{Total number of VEM iterations.}
 #'
+#' @examples
+#' library(DAESC)
+#' data("example", package="DAESC")
+#' res.bb <- daesc_bb(y=df$y, n=df$n, subj=df$subj, x=cbind(1,df$x), xnull=matrix(1,nrow=nrow(df),ncol=1), niter=200, niter_laplace=2, num.nodes=3,
+#' optim.method="BFGS", converge_tol=1e-8)
+#' str(res.bb)
+#'
 #' @export
 daesc_bb <- function(y, n, subj, x, xnull=NULL, niter=200, niter_laplace=2, num.nodes=3,
                      optim.method="BFGS", converge_tol=1e-7){
@@ -111,6 +118,14 @@ daesc_bb <- function(y, n, subj, x, xnull=NULL, niter=200, niter_laplace=2, num.
 #' \item{nobs}{Number of cells.}
 #' \item{nsubj}{Number of individuals.}
 #' \item{iter}{Total number of VEM iterations.}
+#'
+#' @examples
+#' library(DAESC)
+#' data("example", package="DAESC")
+#' res.mix <- daesc_mix(y=df$y, n=df$n, subj=df$subj, x=cbind(1,df$x), xnull=matrix(1,nrow=nrow(df),ncol=1), niter=200, niter_laplace=2, num.nodes=3,
+#' optim.method="BFGS", converge_tol=1e-8)
+#' str(res.mix)
+#'
 #' @export
 daesc_mix <- function(y, n, subj, x, xnull, niter=200, niter_laplace=2, num.nodes=3,
                      optim.method="BFGS", converge_tol=1e-7){
@@ -158,4 +173,57 @@ daesc_mix <- function(y, n, subj, x, xnull, niter=200, niter_laplace=2, num.node
     res <- res[c("b","sigma2","phi","p","p.value","wt","llkl","llkl.null","note","note.null","nobs","nsubj","iter")]
 
     return(res)
+}
+
+
+#' DAESC for single-cell differential allele-specific expression analysis
+#' @description This function conducts automatic model selection between DAESC-BB (\code{daesc_bb}) and DAESC-Mix (\code{daesc_mix}) based on the number of donors (N). When N<20, \code{daesc} chooses DAESC-BB; when N>=20, \code{daesc} chooses DAESC-Mix.
+#' @param y Alternative allele/haplotype read counts for one SNP/gene. A vector of length equal to the number of cells.
+#' @param n Total allele-specific read counts. A vector of same length as \code{y}.
+#' @param subj Donor ID. A vector of same length as \code{y}.
+#' @param x Design matrix for differential ASE. The number of rows should be equal to \code{length(y)}.
+#' @param xnull Design matrix under the null hypothesis. Hypothesis testing is based on likelihood ratio test comparing the full model based on \code{x} and null model based on \code{xnull}. The number of rows should be equal to \code{length(y)}.
+#' @param niter Maximum number of iterations of the variational EM (VEM) algorithm. Default to 200.
+#' @param niter_laplace Number of Newton-Raphson iterations for estimating the individual-specific random effects at each VEM iteration. This is part of the algorithm for numerical integration. Default to 2. Increasing \code{niter_laplace} leads to more accurate results but slower algorithm.
+#' @param num.nodes Number of nodes in Gaussian-Hermite quadrature for numeric integration. Default to 3.
+#' @param optim.method Method of numerical optimization. Can be \code{"BFGS"} or \code{"Nelder-Mead"}.
+#' @param converge_tol Convergence criterion. VEM algorithm is stopped when the relative increase in log-likelihood to last iteration is less than \code{converge_tol}.
+#'
+#' @return A list including
+#' \item{b}{Estimate of coefficients representing ASE and differential ASE effects. The first element is the intercept. The following elements are log odds ratios of allelic fraction per unit increase in the variable(s) in \code{x}.}
+#' \item{sigma2}{Estimated variance of individual-specific random effects.}
+#' \item{phi}{Estimated over-dispersion parameter in the beta-binomail distribution.}
+#' \item{p}{Mixture probabilities pi0 and 1-pi0}
+#' \item{p.value}{P-value for differential ASE.}
+#' \item{wt}{Posterior probabilities for each individual to be classified into cluster 1 (first column) or cluster 2 (second column).}
+#' \item{llkl}{Log-likelihood.}
+#' \item{llkl.null}{Log-likelihood of the null model.}
+#' \item{note}{Note on convergence status.}
+#' \item{note.null}{Note on convergence status of null model.}
+#' \item{nobs}{Number of cells.}
+#' \item{nsubj}{Number of individuals.}
+#' \item{iter}{Total number of VEM iterations.}
+#' \item{model}{"DAESC-BB" or "DAESC-Mix".}
+#'
+#' @examples
+#' library(DAESC)
+#' data("example", package="DAESC")
+#' res <- daesc(y=df$y, n=df$n, subj=df$subj, x=cbind(1,df$x), xnull=matrix(1,nrow=nrow(df),ncol=1), niter=200, niter_laplace=2, num.nodes=3,
+#' optim.method="BFGS", converge_tol=1e-8)
+#' str(res)
+#' @export
+daesc = function(y, n, subj, x, xnull, niter=200, niter_laplace=2, num.nodes=3,
+                 optim.method="BFGS", converge_tol=1e-7){
+    nsubj <- length(unique(subj))
+    if (nsubj<20){
+        res.daesc <- daesc_bb(y=y, n=n, subj=subj, x=x, xnull=xnull, niter=niter, niter_laplace=niter_laplace,
+                              num.nodes=num.nodes, optim.method=optim.method, converge_tol=converge_tol)
+        res.daesc$model <- "DAESC-BB"
+    } else{
+        res.daesc <- daesc_mix(y=y, n=n, subj=subj, x=x, xnull=xnull, niter=niter, niter_laplace=niter_laplace,
+                              num.nodes=num.nodes, optim.method=optim.method, converge_tol=converge_tol)
+        res.daesc$model <- "DAESC-Mix"
+    }
+
+    return(res.daesc)
 }

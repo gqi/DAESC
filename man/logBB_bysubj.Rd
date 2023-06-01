@@ -7,5 +7,5 @@
 logBB_bysubj(linpred, sigma2, phi, y, n, subjfac, randint, randint.prec, ghq)
 }
 \description{
-Mixture model VEM mixture weights
+Complete log-likelihood for each subject, marginalized over a
 }

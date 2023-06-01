@@ -9,6 +9,7 @@ daesc_mix(
   n,
   subj,
   x,
+  xnull,
   niter = 200,
   niter_laplace = 2,
   num.nodes = 3,
@@ -24,6 +25,8 @@ daesc_mix(
 \item{subj}{Donor ID. A vector of same length as \code{y}.}
 
 \item{x}{Design matrix for differential ASE. The number of rows should be equal to \code{length(y)}.}
+
+\item{xnull}{Design matrix under the null hypothesis. Hypothesis testing is based on likelihood ratio test comparing the full model based on \code{x} and null model based on \code{xnull}. The number of rows should be equal to \code{length(y)}.}
 
 \item{niter}{Maximum number of iterations of the variational EM (VEM) algorithm. Default to 200.}
 
@@ -53,4 +56,12 @@ A list including
 }
 \description{
 DAESC-Mix is a beta-binomial mixture model for differential allele-specific expression (ASE) analysis using multiple single-cell RNA-seq samples. It can perform differential ASE analysis with respect to any conditions represented by the design matrix, regardless of whether the comparison is between cell-types within an individual or across individuals, and regardless of whether the condition of interest is continuous or discrete. DAESC-Mix is an extension of DAESC-BB incorporating implicit haplotype phasing.
+}
+\examples{
+library(DAESC)
+data("example", package="DAESC")
+res.mix <- daesc_mix(y=df$y, n=df$n, subj=df$subj, x=cbind(1,df$x), xnull=matrix(1,nrow=nrow(df),ncol=1), niter=200, niter_laplace=2, num.nodes=3,
+optim.method="BFGS", converge_tol=1e-8)
+str(res.mix)
+
 }

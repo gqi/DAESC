@@ -56,6 +56,15 @@ str(res.mix)
 
 Type `?daesc_bb` or `?daesc_mix` in R for detailed documentation.
 
+For automatic selection between `daesc_bb` and `daesc_mix`, use function `daesc`. `daesc` implements `daesc_bb` when the number of donors (N) is less than 20, and `daesc_mix` when N>=20.
+
+```
+res <- daesc(y=df$y, n=df$n, subj=df$subj, x=cbind(1,df$x), xnull=matrix(1,nrow=nrow(df),ncol=1), niter=200, niter_laplace=2, num.nodes=3,
+optim.method="BFGS", converge_tol=1e-8)
+str(res)
+```
+
+
 ### Reference
 
 If you use this package, please cite

@@ -2,6 +2,7 @@
 
 export(bbmix_vem)
 export(bbmixture_vem)
+export(daesc)
 export(daesc_bb)
 export(daesc_mix)
 import(data.table)
