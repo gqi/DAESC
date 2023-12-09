@@ -69,11 +69,11 @@ str(res)
 
 If you use this package, please cite
 
-Qi G, Strober BJ, Popp JM, Ji H,  Battle A. Single-cell allele-specific expression analysis reveals dynamic and cell-type-specific regulatory effects. bioRxiv 2022.10.06.511215 (2022) doi:10.1101/2022.10.06.511215.
+Qi, Guanghao, et al. "Single-cell allele-specific expression analysis reveals dynamic and cell-type-specific regulatory effects." Nature Communications 14.1 (2023): 6317.
 
 ### Maintainer
 
-Guanghao Qi (gqi1@jhu.edu)
+Guanghao Qi (gqi@uw.edu)
 
 ### Dependencies
 
