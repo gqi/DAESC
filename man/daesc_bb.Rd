@@ -24,7 +24,7 @@ daesc_bb(
 
 \item{subj}{Donor ID. A vector of same length as \code{y}.}
 
-\item{x}{Design matrix for differential ASE. The number of rows should be equal to \code{length(y)}.}
+\item{x}{Design matrix for differential ASE. The number of rows should be equal to \code{length(y)}. Should include an intercept (recommended to be the first column) and variables of interest.}
 
 \item{xnull}{Design matrix under the null hypothesis. Hypothesis testing is based on likelihood ratio test comparing the full model based on \code{x} and null model based on \code{xnull}. The number of rows should be equal to \code{length(y)}.}
 
@@ -40,7 +40,7 @@ daesc_bb(
 }
 \value{
 A list including
-\item{b}{Estimate of coefficients representing ASE and differential ASE effects. The first element is the intercept. The following elements are log odds ratios of allelic fraction per unit increase in the variable(s) in \code{x}.}
+\item{b}{Estimate of coefficients representing ASE and differential ASE effects. Each element is log odds ratio of allelic fraction per unit increase in the corresponding column of \code{x}.}
 \item{sigma2}{Estimated variance of individual-specific random effects.}
 \item{phi}{Estimated over-dispersion parameter in the beta-binomail distribution.}
 \item{p.value}{P-value for differential ASE.}

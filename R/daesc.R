@@ -18,7 +18,7 @@ daesc_init <- function(y, n, subj, x){
 #' @param y Alternative allele/haplotype read counts for one SNP/gene. A vector of length equal to the number of cells.
 #' @param n Total allele-specific read counts. A vector of same length as \code{y}.
 #' @param subj Donor ID. A vector of same length as \code{y}.
-#' @param x Design matrix for differential ASE. The number of rows should be equal to \code{length(y)}.
+#' @param x Design matrix for differential ASE. The number of rows should be equal to \code{length(y)}. Should include an intercept (recommended to be the first column) and variables of interest.
 #' @param xnull Design matrix under the null hypothesis. Hypothesis testing is based on likelihood ratio test comparing the full model based on \code{x} and null model based on \code{xnull}. The number of rows should be equal to \code{length(y)}.
 #' @param niter Maximum number of iterations of the variational EM (VEM) algorithm. Default to 200.
 #' @param niter_laplace Number of Newton-Raphson iterations for estimating the individual-specific random effects at each VEM iteration. This is part of the algorithm for numerical integration. Default to 2. Increasing \code{niter_laplace} leads to more accurate results but slower algorithm.
@@ -27,7 +27,7 @@ daesc_init <- function(y, n, subj, x){
 #' @param converge_tol Convergence criterion. VEM algorithm is stopped when the relative increase in log-likelihood to last iteration is less than \code{converge_tol}.
 #'
 #' @return A list including
-#' \item{b}{Estimate of coefficients representing ASE and differential ASE effects. The first element is the intercept. The following elements are log odds ratios of allelic fraction per unit increase in the variable(s) in \code{x}.}
+#' \item{b}{Estimate of coefficients representing ASE and differential ASE effects. Each element is log odds ratio of allelic fraction per unit increase in the corresponding column of \code{x}.}
 #' \item{sigma2}{Estimated variance of individual-specific random effects.}
 #' \item{phi}{Estimated over-dispersion parameter in the beta-binomail distribution.}
 #' \item{p.value}{P-value for differential ASE.}
@@ -67,7 +67,7 @@ daesc_bb <- function(y, n, subj, x, xnull=NULL, niter=200, niter_laplace=2, num.
     # Convert null design matrix to matrix if input is NULL or a vector
     if (is.null(xnull)){
         XNull <- matrix(1,nrow=length(y),ncol=1)
-    } else if (class(x)[1]!="matrix"){
+    } else if (class(xnull)[1]!="matrix"){
         XNull <- matrix(xnull, ncol=1)
     } else{
         XNull <- xnull
@@ -84,7 +84,7 @@ daesc_bb <- function(y, n, subj, x, xnull=NULL, niter=200, niter_laplace=2, num.
     res$p.value <- pchisq(2*(res$llkl-res$llkl.null),df=ncol(X)-ncol(XNull),lower.tail=F)
 
     # Clean up results presentation
-    names(res$b) <- c("Intercept",paste0("x",1:(length(res$b)-1)))
+    names(res$b) <- paste0("x",0:(length(res$b)-1))
     res$phi <- as.numeric(res$phi)
 
     res <- res[c("b","sigma2","phi","p.value","llkl","llkl.null","note","note.null","nobs","nsubj","iter")]
@@ -96,7 +96,7 @@ daesc_bb <- function(y, n, subj, x, xnull=NULL, niter=200, niter_laplace=2, num.
 #' @param y Alternative allele/haplotype read counts for one SNP/gene. A vector of length equal to the number of cells.
 #' @param n Total allele-specific read counts. A vector of same length as \code{y}.
 #' @param subj Donor ID. A vector of same length as \code{y}.
-#' @param x Design matrix for differential ASE. The number of rows should be equal to \code{length(y)}.
+#' @param x Design matrix for differential ASE. The number of rows should be equal to \code{length(y)}. Should include an intercept (recommended to be the first column) and variables of interest.
 #' @param xnull Design matrix under the null hypothesis. Hypothesis testing is based on likelihood ratio test comparing the full model based on \code{x} and null model based on \code{xnull}. The number of rows should be equal to \code{length(y)}.
 #' @param niter Maximum number of iterations of the variational EM (VEM) algorithm. Default to 200.
 #' @param niter_laplace Number of Newton-Raphson iterations for estimating the individual-specific random effects at each VEM iteration. This is part of the algorithm for numerical integration. Default to 2. Increasing \code{niter_laplace} leads to more accurate results but slower algorithm.
@@ -105,7 +105,7 @@ daesc_bb <- function(y, n, subj, x, xnull=NULL, niter=200, niter_laplace=2, num.
 #' @param converge_tol Convergence criterion. VEM algorithm is stopped when the relative increase in log-likelihood to last iteration is less than \code{converge_tol}.
 #'
 #' @return A list including
-#' \item{b}{Estimate of coefficients representing ASE and differential ASE effects. The first element is the intercept. The following elements are log odds ratios of allelic fraction per unit increase in the variable(s) in \code{x}.}
+#' \item{b}{Estimate of coefficients representing ASE and differential ASE effects. Each element is log odds ratio of allelic fraction per unit increase in the corresponding column of \code{x}.}
 #' \item{sigma2}{Estimated variance of individual-specific random effects.}
 #' \item{phi}{Estimated over-dispersion parameter in the beta-binomail distribution.}
 #' \item{p}{Mixture probabilities pi0 and 1-pi0}
@@ -148,7 +148,7 @@ daesc_mix <- function(y, n, subj, x, xnull, niter=200, niter_laplace=2, num.node
     # Convert null design matrix to matrix if input is NULL or a vector
     if (is.null(xnull)){
         XNull <- matrix(1,nrow=length(y),ncol=1)
-    } else if (class(x)[1]!="matrix"){
+    } else if (class(xnull)[1]!="matrix"){
         XNull <- matrix(xnull, ncol=1)
     } else{
         XNull <- xnull
@@ -165,7 +165,7 @@ daesc_mix <- function(y, n, subj, x, xnull, niter=200, niter_laplace=2, num.node
     res$p.value <- pchisq(2*(res$llkl-res$llkl.null),df=ncol(X)-ncol(XNull),lower.tail=F)
 
     # Clean up results presentation
-    names(res$b) <- c("Intercept",paste0("x",1:(length(res$b)-1)))
+    names(res$b) <- paste0("x",0:(length(res$b)-1))
     res$phi <- as.numeric(res$phi)
     names(res$p) <- c("z=1","z=-1")
     colnames(res$wt) <- c("z=1","z=-1")
@@ -181,7 +181,7 @@ daesc_mix <- function(y, n, subj, x, xnull, niter=200, niter_laplace=2, num.node
 #' @param y Alternative allele/haplotype read counts for one SNP/gene. A vector of length equal to the number of cells.
 #' @param n Total allele-specific read counts. A vector of same length as \code{y}.
 #' @param subj Donor ID. A vector of same length as \code{y}.
-#' @param x Design matrix for differential ASE. The number of rows should be equal to \code{length(y)}.
+#' @param x Design matrix for differential ASE. The number of rows should be equal to \code{length(y)}. Should include an intercept (recommended to be the first column) and variables of interest.
 #' @param xnull Design matrix under the null hypothesis. Hypothesis testing is based on likelihood ratio test comparing the full model based on \code{x} and null model based on \code{xnull}. The number of rows should be equal to \code{length(y)}.
 #' @param niter Maximum number of iterations of the variational EM (VEM) algorithm. Default to 200.
 #' @param niter_laplace Number of Newton-Raphson iterations for estimating the individual-specific random effects at each VEM iteration. This is part of the algorithm for numerical integration. Default to 2. Increasing \code{niter_laplace} leads to more accurate results but slower algorithm.
@@ -190,7 +190,7 @@ daesc_mix <- function(y, n, subj, x, xnull, niter=200, niter_laplace=2, num.node
 #' @param converge_tol Convergence criterion. VEM algorithm is stopped when the relative increase in log-likelihood to last iteration is less than \code{converge_tol}.
 #'
 #' @return A list including
-#' \item{b}{Estimate of coefficients representing ASE and differential ASE effects. The first element is the intercept. The following elements are log odds ratios of allelic fraction per unit increase in the variable(s) in \code{x}.}
+#' \item{b}{Estimate of coefficients representing ASE and differential ASE effects. Each element is log odds ratio of allelic fraction per unit increase in the corresponding column of \code{x}.}
 #' \item{sigma2}{Estimated variance of individual-specific random effects.}
 #' \item{phi}{Estimated over-dispersion parameter in the beta-binomail distribution.}
 #' \item{p}{Mixture probabilities pi0 and 1-pi0}
